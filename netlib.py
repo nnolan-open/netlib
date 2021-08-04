@@ -24,3 +24,20 @@ class IPv4:
       return(  IPv4(self.value & other.value) )
     assert type(other) == int
     return(IPv4(self.value & other))
+
+  class IPv4Network(IPv4):
+   def __init__(self,network=0,shortmask=0,):
+      IPv4.__init__(self,network)
+      self.setmask(shortmask)
+   def setmask(self,shortmask=None):
+      if type(shortmask) == int and 0 <= shortmask <= 32:
+         self.shortmask = shortmask
+      self.mask = IPv4(sum(map(lambda b: 2**(31-b),list(range(0,self.shortmask)))))
+      self.nhosts = 2**(32 - self.shortmask) - 2 if self.shortmask < 31 else 2**(32 - self.shortmask)
+      self.baseaddr = IPv4(self.value & self.mask.value)
+      self.broadcast = IPv4(int(self.baseaddr) + (((2**32)-1) ^ int(self.mask)))
+   def contains(self,address):
+      if self.mask.value & self.value == self.mask.value & int(IPv4(address)):
+         return True
+      else:
+         return False
